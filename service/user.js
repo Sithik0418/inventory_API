@@ -49,7 +49,7 @@ class UserService {
     return await bcrypt.compare(password, hashedPassword);
   }
   
-  async login(email, password) {
+  async login(email, password, roleId) {
     // 1. Get user by email
     const user = await this.user.getUserByMail(email);
 
@@ -67,14 +67,19 @@ class UserService {
       throw new Error("Invalid email or password");
     }
 
-    // 3. Generate JWT token
+    // 3. Check if roleId matches the user's role from DB
+    if (roleId !== undefined && String(roleId) !== String(user.role)) {
+      throw new Error("Role mismatch");
+    }
+
+    // 4. Generate JWT token
     const jwtToken = await generateToken(
       {
         id: String(user.id),
         email: user.mail,
       });
 
-    // 4. Return token with user details
+    // 5. Return token with user details
     const { password: _, ...userDetails } = user;
 
     return {

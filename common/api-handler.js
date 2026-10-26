@@ -99,9 +99,9 @@ class APIController {
 
   async login(req, res, next) {
     try {
-      const { email, password } = req.body;
+      const { email, password, roleId } = req.body;
 
-      const result = await this.userService.login(email, password);
+      const result = await this.userService.login(email, password, roleId);
 
       return res.status(200).json({
         success: true,
@@ -112,7 +112,17 @@ class APIController {
         },
       });
     } catch (error) {
-      next(error);
+      console.error(error);
+
+      if (error.message === "Invalid email or password") {
+        return sendResponse(res, 401, false, error.message);
+      }
+
+      if (error.message === "Role mismatch") {
+        return sendResponse(res, 403, false, "Access denied: role does not match");
+      }
+
+      return sendResponse(res, 500, false, "Login failed");
     }
   }
 

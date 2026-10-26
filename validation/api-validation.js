@@ -19,6 +19,7 @@ const userSchema = Joi.object({
 const productSchema = Joi.object({
   name: Joi.string().trim().min(1).max(150).required(),
   count: Joi.number().integer().min(0).required(),
+  category: Joi.string().trim().min(1).max(150).required(),
   buyPrice: Joi.number().precision(2).min(0).required(),
   sellPrice: Joi.number().precision(2).min(0).required()
 });

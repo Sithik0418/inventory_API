@@ -5,18 +5,18 @@ const pool = require('../common/connect-database');
   // Get all products
   async getAllProducts() {
     const [rows] = await pool.execute(
-      'SELECT id, name, count, sell_price as sellPrice, buy_price as buyPrice FROM products'
+      'SELECT id, name, count, sell_price as sellPrice, buy_price as buyPrice, category FROM products'
     );
 
     return rows;
   }
 
   // Add a new product
-  async addProduct({ name, count, sellPrice, buyPrice }) {
+  async addProduct({ name, count, sellPrice, buyPrice, category }) {
     const [result] = await pool.execute(
-      `INSERT INTO products (name, count, sell_price, buy_price)
-       VALUES (?, ?, ?, ?)`,
-      [name, count, sellPrice, buyPrice]
+      `INSERT INTO products (name, count, sell_price, buy_price, category)
+       VALUES (?, ?, ?, ?, ?)`,
+      [name, count, sellPrice, buyPrice, category]
     );
 
     return {
