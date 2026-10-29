@@ -59,6 +59,15 @@ async updateProduct(id, { name, count, sellPrice, buyPrice }) {
   return this.getProductById(id);
 }
 
+ async deleteProduct(id) {
+  const [result] = await pool.execute(
+    'DELETE FROM products WHERE id = ?',
+    [id]
+  );
+
+  return result.affectedRows > 0;
+}
+
  async updateProductCount(id, updatedCount, conection) {
   const poolToUse = conection || pool;
   const [result] = await poolToUse.execute(
@@ -74,5 +83,4 @@ async updateProduct(id, { name, count, sellPrice, buyPrice }) {
 }
 
 module.exports = Product;
-
 

@@ -5,13 +5,16 @@ class BillingService {
   constructor() {
     this.billingModel = new BillingModel();
   }
-  async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1) {
+  async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode) {
     return await this.billingModel.createBill(
       userId,
       products,
       isTaxApplied,
       taxAppliedPercent,
-      paidStatus
+      paidStatus,
+      customer_name,
+      customer_mobile,
+      payment_mode
     );
   }
 

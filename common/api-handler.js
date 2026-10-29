@@ -169,6 +169,31 @@ class APIController {
     }
   }
 
+  async deleteProduct(req, res) {
+    try {
+      const id = Number(req.params.id);
+      const result = await this.productService.deleteProduct(id);
+
+      return sendResponse(
+        res, 200, true, 'Product deleted successfully', result
+      );
+    } catch (error) {
+      console.error(error);
+
+      if (error.message === 'Product not found') {
+        return sendResponse(res, 404, false, error.message);
+      }
+
+      if (error.code === 'ER_ROW_IS_REFERENCED_2') {
+        return sendResponse(
+          res, 409, false, 'Cannot delete product because it is used in existing bills'
+        );
+      }
+
+      return sendResponse(res, 500, false, 'Failed to delete product');
+    }
+  }
+
   async getProducts(req, res) {
     try {
       const products = await this.productService.getAllProducts();
@@ -209,7 +234,7 @@ class APIController {
 
   async createBill(req, res, next) {
     try {
-      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus } =
+      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode } =
         req.body;
       
 
@@ -218,7 +243,10 @@ class APIController {
         products,
         isTaxApplied,
         taxAppliedPercent,
-        paidStatus
+        paidStatus,
+        customer_name,
+        customer_mobile,
+        payment_mode
       );
 
       return res.status(201).json({

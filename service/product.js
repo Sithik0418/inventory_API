@@ -37,6 +37,16 @@ class ProductService {
 
     return this.product.updateProduct(id, productData);
   }
+
+  async deleteProduct(id) {
+    const deleted = await this.product.deleteProduct(id);
+
+    if (!deleted) {
+      throw new Error('Product not found');
+    }
+
+    return { productId: id };
+  }
 }
 
 module.exports = ProductService;

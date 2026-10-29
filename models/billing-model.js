@@ -8,7 +8,7 @@ class BillingModel {
         this.productModel = new ProductModel();
     }
 
-async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1) {
+async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode) {
   const connection = await pool.getConnection();
   let transactionStarted = false;
 
@@ -90,8 +90,8 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
     const [billResult] = await connection.execute(
       `INSERT INTO billing
        (user_id, subtotal, tax_applied_percent,
-        is_tax_applied, tax_amount, total_cost, paid_status)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         subtotal,
@@ -100,6 +100,9 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
         taxAmount,
         grandTotal,
         paidStatus,
+        customer_name,
+        customer_mobile,
+        payment_mode
       ]
     );
 
@@ -151,8 +154,7 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
 async getAllBills() {
   const [rows] = await pool.execute(
     `SELECT
-       id, user_id AS userId, subtotal, is_tax_applied AS isTaxApplied, tax_applied_percent AS taxAppliedPercent,
-       tax_amount AS taxAmount, total_cost AS totalCost, paid_status AS paidStatus
+       id, total_cost AS totalCost, customer_name AS customerName, customer_mobile AS customerMobile, payment_mode AS paymentMode, created_at as createdAt, paid_status AS paidStatus
      FROM billing 
      ORDER BY created_at DESC`
   );

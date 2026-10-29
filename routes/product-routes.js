@@ -27,6 +27,13 @@ router.put(
   api.updateProduct.bind(api)
 );
 
+router.delete(
+  '/:id',
+  validate(idSchema, 'params'),
+  authenticateToken,
+  api.deleteProduct.bind(api)
+);
+
 router.get(
   '/',
   authenticateToken,
