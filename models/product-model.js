@@ -11,6 +11,37 @@ const pool = require('../common/connect-database');
     return rows;
   }
 
+  async getProductsForInventory() {
+    const [rows] = await pool.execute(
+      `SELECT
+    id AS productId,
+    name AS productName,
+    count,
+    CASE
+        WHEN count = 0 THEN 'Out of Stock'
+        WHEN count < 15 THEN 'Low Stock'
+        ELSE 'In Stock'
+    END AS stockStatus
+FROM products;`,
+    );  
+
+    return rows;
+  }
+
+  async lowStockProducts() {
+    const [rows] = await pool.execute(
+      `SELECT COUNT(*) AS lowStockItems
+       FROM products
+      WHERE count > 0 AND count < 15;`)  ;
+
+      return rows[0].lowStockItems || 0; 
+    }
+
+  async totalProducts() {   
+    const [rows] = await pool.execute(`SELECT COUNT(*) AS totalProducts FROM products;`);
+    return rows[0].totalProducts || 0; 
+  }
+
   // Add a new product
   async addProduct({ name, count, sellPrice, buyPrice, category }) {
     const [result] = await pool.execute(

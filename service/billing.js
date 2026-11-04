@@ -29,6 +29,10 @@ class BillingService {
   async updatePaidStatus(id, paidStatus) {
     return await this.billingModel.updatePaidStatus(id, paidStatus);
   }
+
+  async totalSalesToday() {
+    return await this.billingModel.totalSalesToday();
+  }
 }
 
 module.exports = BillingService;
