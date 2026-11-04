@@ -41,6 +41,12 @@ router.get(
 );
 
 router.get(
+  '/inventory',
+  authenticateToken,
+  api.getProductsForInventory.bind(api)
+);
+
+router.get(
   '/:id',
   validate(idSchema, 'params'),
   authenticateToken,

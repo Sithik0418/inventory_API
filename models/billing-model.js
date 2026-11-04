@@ -226,6 +226,18 @@ async updatePaidStatus(id, paid_status) {
   return result.affectedRows > 0;
 }
 
+async totalSalesToday() {
+  const [rows] = await pool.execute(
+    `SELECT SUM(total_cost) AS totalSales, COUNT(*) AS totalBills
+     FROM billing
+     WHERE DATE(created_at) = CURDATE()`
+  );
+  return {
+    totalSales: rows[0].totalSales || 0,
+    totalBills: rows[0].totalBills || 0,
+  };
+   
+}
 }
 
 module.exports = BillingModel;

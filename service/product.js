@@ -11,6 +11,19 @@ class ProductService {
     return this.product.getAllProducts();
   }
 
+  // Get products for inventory
+  async getProductsForInventory() {
+    return this.product.getProductsForInventory();
+  }
+
+  async lowStockProducts() {
+    return this.product.lowStockProducts();
+  }
+
+  async totalProducts() {
+    return this.product.totalProducts();
+  }
+
   // Get product by ID
   async getProductById(id) {
     const product = await this.product.getProductById(id);

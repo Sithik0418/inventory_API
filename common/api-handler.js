@@ -2,11 +2,13 @@
 const UserService = require('../service/user');
 const ProductService = require('../service/product');
 const BillingService = require('../service/billing');
+const  DashboardService = require('../service/dashboard');
 const { sendResponse } = require('../common/common');
 
 class APIController {
   constructor() {
     this.userService = new UserService();
+    this.dashboardService = new DashboardService();
     this.productService = new ProductService();
     this.billingService = new BillingService();
   }
@@ -193,6 +195,35 @@ class APIController {
       return sendResponse(res, 500, false, 'Failed to delete product');
     }
   }
+
+  async getProductsForInventory(req, res) {
+    try {
+      const products = await this.productService.getProductsForInventory();
+
+      return sendResponse(
+        res, 200, true, products, 'Products for inventory fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+
+      return sendResponse(res, 500, false, 'Failed to fetch products for inventory');
+    }
+  }
+
+  async getOverall(req, res) {
+    try {
+      const overallData = await this.dashboardService.getOverall(); 
+
+      return sendResponse(
+        res, 200, true, overallData, 'Overall data fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, false, 'Failed to fetch overall data');
+    }
+  }
+
+  
 
   async getProducts(req, res) {
     try {
