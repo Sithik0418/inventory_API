@@ -33,6 +33,10 @@ class BillingService {
   async totalSalesToday() {
     return await this.billingModel.totalSalesToday();
   }
+
+  async getSalesReport(startDate, endDate) {
+    return await this.billingModel.getSalesReport(startDate, endDate);
+  }
 }
 
 module.exports = BillingService;

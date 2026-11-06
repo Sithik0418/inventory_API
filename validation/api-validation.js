@@ -20,6 +20,7 @@ const productSchema = Joi.object({
   name: Joi.string().trim().min(1).max(150).required(),
   count: Joi.number().integer().min(0).required(),
   category: Joi.string().trim().min(1).max(150).required(),
+  unit: Joi.string().trim().min(1).max(150).required(),
   buyPrice: Joi.number().precision(2).min(0).required(),
   sellPrice: Joi.number().precision(2).min(0).required()
 });
@@ -96,6 +97,38 @@ const updatePaidStatusSchema = Joi.object({
   paid_status: Joi.number().integer().valid(1, 2).required(),
 });
 
+const salesReportDateSchema = Joi.string()
+  .pattern(/^\d{4}-\d{2}-\d{2}$/)
+  .custom((value, helpers) => {
+    const parsedDate = new Date(`${value}T00:00:00.000Z`);
+
+    if (
+      Number.isNaN(parsedDate.getTime()) ||
+      parsedDate.toISOString().slice(0, 10) !== value
+    ) {
+      return helpers.error('date.invalid');
+    }
+
+    return value;
+  })
+  .messages({
+    'string.pattern.base': '{{#label}} must use YYYY-MM-DD format',
+    'date.invalid': '{{#label}} must be a valid calendar date'
+  });
+
+const salesReportSchema = Joi.object({
+  startDate: salesReportDateSchema.required(),
+  endDate: salesReportDateSchema.required()
+}).custom((dates, helpers) => {
+  if (dates.startDate > dates.endDate) {
+    return helpers.error('date.range');
+  }
+
+  return dates;
+}).messages({
+  'date.range': '"startDate" must be on or before "endDate"'
+});
+
 module.exports = {
   userSchema,
   productSchema,
@@ -103,5 +136,6 @@ module.exports = {
   validate,
   createBillSchema,
   getBillByIdSchema,
-  updatePaidStatusSchema
+  updatePaidStatusSchema,
+  salesReportSchema
 };

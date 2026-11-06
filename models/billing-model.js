@@ -238,6 +238,78 @@ async totalSalesToday() {
   };
    
 }
+
+async getSalesReport(startDate, endDate) {
+  const dateFilter = `created_at >= ?
+    AND created_at < DATE_ADD(?, INTERVAL 1 DAY)`;
+  const dateParams = [startDate, endDate];
+
+  const [[summaryRows], [productRows], [trendRows]] = await Promise.all([
+    pool.execute(
+      `SELECT
+         COALESCE(SUM(total_cost), 0) AS totalSalesAmount,
+         COUNT(*) AS totalBills,
+         COALESCE(AVG(total_cost), 0) AS averageBillValue
+       FROM billing
+       WHERE ${dateFilter}`,
+      dateParams
+    ),
+    pool.execute(
+      `SELECT
+         p.name AS product_name,
+         SUM(bi.count) AS qty_sold
+       FROM billing b
+       JOIN billing_items bi ON bi.billing_id = b.id
+       JOIN products p ON p.id = bi.product_id
+       WHERE b.created_at >= ?
+         AND b.created_at < DATE_ADD(?, INTERVAL 1 DAY)
+       GROUP BY p.id, p.name
+       ORDER BY qty_sold DESC, p.name ASC`,
+      dateParams
+    ),
+    pool.execute(
+      `SELECT
+         DATE_FORMAT(created_at, '%Y-%m-%d') AS date,
+         SUM(total_cost) AS amountSold
+       FROM billing
+       WHERE ${dateFilter}
+       GROUP BY DATE_FORMAT(created_at, '%Y-%m-%d')
+       ORDER BY DATE_FORMAT(created_at, '%Y-%m-%d')`,
+      dateParams
+    )
+  ]);
+
+  const salesByDate = new Map(
+    trendRows.map((row) => [row.date, Number(row.amountSold)])
+  );
+  const salesTrend = [];
+  const currentDate = new Date(`${startDate}T00:00:00.000Z`);
+  const lastDate = new Date(`${endDate}T00:00:00.000Z`);
+
+  while (currentDate <= lastDate) {
+    const date = currentDate.toISOString().slice(0, 10);
+    salesTrend.push({
+      date,
+      amountSold: salesByDate.get(date) || 0
+    });
+    currentDate.setUTCDate(currentDate.getUTCDate() + 1);
+  }
+
+  const summary = summaryRows[0];
+
+  return {
+    startDate,
+    endDate,
+    totalSalesAmount: Number(summary.totalSalesAmount),
+    totalBills: Number(summary.totalBills),
+    averageBillValue: Number(summary.averageBillValue),
+    topSellingProducts: productRows.map((row) => ({
+      product_name: row.product_name,
+      qty_sold: Number(row.qty_sold)
+    })),
+    salesTrend
+  };
+}
 }
 
 module.exports = BillingModel;

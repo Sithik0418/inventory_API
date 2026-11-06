@@ -223,7 +223,22 @@ class APIController {
     }
   }
 
-  
+  async getSalesReport(req, res) {
+    try {
+      const { startDate, endDate } = req.query;
+      const report = await this.dashboardService.getSalesReport(
+        startDate,
+        endDate
+      );
+
+      return sendResponse(
+        res, 200, true, report, 'Sales report fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, false, 'Failed to fetch sales report');
+    }
+  }
 
   async getProducts(req, res) {
     try {
