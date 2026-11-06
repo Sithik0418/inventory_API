@@ -93,7 +93,6 @@ const getBillByIdSchema = Joi.object({
 });
 
 const updatePaidStatusSchema = Joi.object({
-  id: Joi.number().integer().positive().required(),
   paid_status: Joi.number().integer().valid(1, 2).required(),
 });
 

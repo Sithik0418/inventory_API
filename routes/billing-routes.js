@@ -8,10 +8,19 @@ var { validate, createBillSchema, getBillByIdSchema, updatePaidStatusSchema } = 
 
 router.post("/", validate(createBillSchema), apiController.createBill.bind(apiController));
 
-router.get("/", validate(getBillByIdSchema), apiController.getAllBills.bind(apiController));
+router.get("/", apiController.getAllBills.bind(apiController));
 
-router.get("/:id", validate(getBillByIdSchema), apiController.getBillById.bind(apiController));
+router.get(
+  "/:id",
+  validate(getBillByIdSchema, "params"),
+  apiController.getBillById.bind(apiController)
+);
 
-router.patch("/:id/paid-status", validate(updatePaidStatusSchema), apiController.updatePaidStatus.bind(apiController));
+router.patch(
+  "/:id/paid-status",
+  validate(getBillByIdSchema, "params"),
+  validate(updatePaidStatusSchema),
+  apiController.updatePaidStatus.bind(apiController)
+);
 
 module.exports = router;
