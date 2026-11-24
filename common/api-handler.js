@@ -265,7 +265,7 @@ class APIController {
 
   async createBill(req, res, next) {
     try {
-      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode } =
+      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode, isPartial } =
         req.body;
       
 
@@ -277,12 +277,44 @@ class APIController {
         paidStatus,
         customer_name,
         customer_mobile,
-        payment_mode
+        payment_mode, 
+        isPartial
       );
 
       return res.status(201).json({
         success: true,
         message: "Bill created successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async addPartialPayment(req, res, next) {
+    try {
+      const billId = req.params.id;
+      const paymentDetails = req.body.paymentDetails;
+
+      const result = await this.billingService.addPartialPayment(billId, paymentDetails);
+
+      return res.status(200).json({
+        success: true,
+        message: "Partial payment added successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getPaymentGroupedByCustomer(req, res, next) {
+    try {
+      const result = await this.billingService.getPaymentGroupedByCustomer();
+
+      return res.status(200).json({
+        success: true,
+        message: "Payment details grouped by customer fetched successfully",
         data: result,
       });
     } catch (error) {

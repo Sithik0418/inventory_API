@@ -5,7 +5,7 @@ class BillingService {
   constructor() {
     this.billingModel = new BillingModel();
   }
-  async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode) {
+  async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode, isPartial = 0) {
     return await this.billingModel.createBill(
       userId,
       products,
@@ -14,7 +14,8 @@ class BillingService {
       paidStatus,
       customer_name,
       customer_mobile,
-      payment_mode
+      payment_mode,
+      isPartial
     );
   }
 
@@ -32,6 +33,14 @@ class BillingService {
 
   async totalSalesToday() {
     return await this.billingModel.totalSalesToday();
+  }
+
+  async addPartialPayment(billId, paymentDetails) {
+    return await this.billingModel.addPartialPayment(billId, paymentDetails);
+  }
+
+  async getPaymentGroupedByCustomer() {
+    return await this.billingModel.getPaymentGroupedByCustomer();
   }
 }
 

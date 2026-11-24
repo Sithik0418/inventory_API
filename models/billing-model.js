@@ -8,7 +8,7 @@ class BillingModel {
         this.productModel = new ProductModel();
     }
 
-async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode) {
+async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode, isPartial = 0) {
   const connection = await pool.getConnection();
   let transactionStarted = false;
 
@@ -90,8 +90,8 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
     const [billResult] = await connection.execute(
       `INSERT INTO billing
        (user_id, subtotal, tax_applied_percent,
-        is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode, is_partial)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         subtotal,
@@ -102,7 +102,8 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
         paidStatus,
         customer_name,
         customer_mobile,
-        payment_mode
+        payment_mode,
+        isPartial
       ]
     );
 
@@ -237,6 +238,40 @@ async totalSalesToday() {
     totalBills: rows[0].totalBills || 0,
   };
    
+}
+
+async addPartialPayment(billingId, paymentDetails) {
+  try {
+    let totalPaid = 0;
+    for(const { amount, isPaid, payType } of paymentDetails) {  
+      const [result] = await pool.execute(
+        `INSERT INTO partial_billing (billing_id, amount, is_paid, pay_type)
+        VALUES (?, ?, ?, ?)`,
+        [billingId, amount, isPaid, payType]
+      );
+      totalPaid += amount;
+    }
+    const [billRows] = await pool.execute(
+      `update billing set paid_amount = paid_amount+?, paid_status = CASE WHEN paid_amount + ? >= total_cost THEN 1 ELSE 0 END where id = ?`,
+      [totalPaid, totalPaid, billingId]
+    );
+    return await this.getBillById(
+      [billingId]
+    );
+  } catch (error) {
+    console.error('Error adding partial payments:', error);
+    throw error;
+  }
+}
+
+async getPaymentGroupedByCustomer(customerId) {
+  const [rows] = await pool.execute(
+    `SELECT customer_name as customerName, SUM(total_cost - paid_amount) as remainingAmount
+     FROM billing
+     GROUP BY customer_name`,
+    []
+  );
+  return rows;
 }
 }
 

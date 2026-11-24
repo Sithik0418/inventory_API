@@ -72,7 +72,7 @@ const createBillSchema = Joi.object({
     .pattern(/^[0-9+()\-\s]{7,15}$/)
     .required(),
   payment_mode: Joi.string().trim().min(1).max(50).required(),
-
+  isPartial: Joi.number().integer().valid(0, 1).optional(),
   products: Joi.array()
     .items(
       Joi.object({
@@ -96,6 +96,16 @@ const updatePaidStatusSchema = Joi.object({
   paid_status: Joi.number().integer().valid(1, 2).required(),
 });
 
+const partialPaymentSchema = Joi.object({
+    paymentDetails: Joi.array().items(
+      Joi.object({
+        amount: Joi.number().precision(2).min(0).required(),
+        isPaid: Joi.number().integer().valid(0, 1).required(),
+        payType: Joi.string().trim().min(1).max(50).required(),
+      })
+    ).min(1).required(),
+  });
+
 module.exports = {
   userSchema,
   productSchema,
@@ -103,5 +113,6 @@ module.exports = {
   validate,
   createBillSchema,
   getBillByIdSchema,
-  updatePaidStatusSchema
+  updatePaidStatusSchema,
+  partialPaymentSchema
 };
