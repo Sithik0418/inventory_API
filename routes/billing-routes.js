@@ -4,9 +4,27 @@ const router = express.Router();
 
 const APIController = require("../common/api-handler");
 const apiController = new APIController();
-var { validate, createBillSchema, getBillByIdSchema, updatePaidStatusSchema } = require("../validation/api-validation");
+var {
+  validate,
+  createBillSchema,
+  getBillByIdSchema,
+  updatePaidStatusSchema,
+  partialPaymentSchema,
+} = require("../validation/api-validation");
+
+router.get(
+  "/remaining-payments",
+  apiController.getPaymentGroupedByCustomer.bind(apiController)
+);
 
 router.post("/", validate(createBillSchema), apiController.createBill.bind(apiController));
+
+router.post(
+  "/partial-payment/:id",
+  validate(getBillByIdSchema, "params"),
+  validate(partialPaymentSchema),
+  apiController.addPartialPayment.bind(apiController)
+);
 
 router.get("/", apiController.getAllBills.bind(apiController));
 

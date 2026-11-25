@@ -97,6 +97,20 @@ const updatePaidStatusSchema = Joi.object({
   paid_status: Joi.number().integer().valid(1, 2).required(),
 });
 
+const partialPaymentSchema = Joi.object({
+  paymentDetails: Joi.array()
+    .items(
+      Joi.object({
+        amount: Joi.number().precision(2).greater(0).required(),
+        is_paid: Joi.number().integer().valid(0, 1),
+        isPaid: Joi.number().integer().valid(0, 1),
+        payType: Joi.string().trim().min(1).max(50).required(),
+      }).or("is_paid", "isPaid")
+    )
+    .min(1)
+    .required(),
+});
+
 const salesReportDateSchema = Joi.string()
   .pattern(/^\d{4}-\d{2}-\d{2}$/)
   .custom((value, helpers) => {
@@ -137,5 +151,6 @@ module.exports = {
   createBillSchema,
   getBillByIdSchema,
   updatePaidStatusSchema,
+  partialPaymentSchema,
   salesReportSchema
 };

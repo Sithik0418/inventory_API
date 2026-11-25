@@ -38,6 +38,14 @@ class BillingService {
   async getSalesReport(startDate, endDate) {
     return await this.billingModel.getSalesReport(startDate, endDate);
   }
+
+  async addPartialPayment(billId, paymentDetails) {
+    return await this.billingModel.addPartialPayment(billId, paymentDetails);
+  }
+
+  async getPaymentGroupedByCustomer() {
+    return await this.billingModel.getPaymentGroupedByCustomer();
+  }
 }
 
 module.exports = BillingService;

@@ -85,17 +85,19 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
       : 0;
 
     const grandTotal = Number((subtotal + taxAmount).toFixed(2));
+    const paidAmount = Number(is_partial) === 0 ? grandTotal : 0;
 
     // 4. Insert billing record
     const [billResult] = await connection.execute(
       `INSERT INTO billing
-       (user_id, subtotal, tax_applied_percent,
+       (user_id, subtotal, tax_applied_percent, paid_amount,
         is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode, is_partial)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         subtotal,
         isTaxApplied ? taxPercent : 0,
+        paidAmount,
         Boolean(isTaxApplied),
         taxAmount,
         grandTotal,
@@ -136,6 +138,7 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
       tax_applied_percent: isTaxApplied ? taxPercent : 0,
       tax_amount: taxAmount,
       total_cost: grandTotal,
+      paid_amount: paidAmount,
       paid_status: paidStatus,
       is_partial: Number(is_partial),
       items,
@@ -227,6 +230,92 @@ async updatePaidStatus(id, paid_status) {
   );
 
   return result.affectedRows > 0;
+}
+
+async addPartialPayment(billingId, paymentDetails) {
+  const connection = await pool.getConnection();
+  let transactionStarted = false;
+
+  try {
+    await connection.beginTransaction();
+    transactionStarted = true;
+
+    const [billRows] = await connection.execute(
+      `SELECT total_cost, COALESCE(paid_amount, 0) AS paid_amount
+       FROM billing
+       WHERE id = ?
+       FOR UPDATE`,
+      [billingId]
+    );
+
+    if (billRows.length === 0) {
+      await connection.rollback();
+      transactionStarted = false;
+      return null;
+    }
+
+    const paidAmount = paymentDetails.reduce(
+      (total, payment) =>
+        total +
+        (Number(payment.is_paid ?? payment.isPaid) === 1
+          ? Number(payment.amount)
+          : 0),
+      0
+    );
+    const newPaidAmount = Number(billRows[0].paid_amount) + paidAmount;
+    const totalCost = Number(billRows[0].total_cost);
+
+    if (newPaidAmount > totalCost) {
+      throw new Error("Partial payment exceeds the remaining bill amount");
+    }
+
+    for (const payment of paymentDetails) {
+      await connection.execute(
+        `INSERT INTO partial_billing (billing_id, amount, is_paid, pay_type)
+         VALUES (?, ?, ?, ?)`,
+        [
+          billingId,
+          payment.amount,
+          payment.is_paid ?? payment.isPaid,
+          payment.payType,
+        ]
+      );
+    }
+
+    await connection.execute(
+      `UPDATE billing
+       SET paid_amount = ?,
+           paid_status = ?
+       WHERE id = ?`,
+      [newPaidAmount, newPaidAmount >= totalCost ? 2 : 1, billingId]
+    );
+
+    await connection.commit();
+    transactionStarted = false;
+
+    return await this.getBillById(billingId);
+  } catch (error) {
+    if (transactionStarted) {
+      await connection.rollback();
+    }
+
+    throw error;
+  } finally {
+    connection.release();
+  }
+}
+
+async getPaymentGroupedByCustomer() {
+  const [rows] = await pool.execute(
+    `SELECT
+       customer_name AS customerName,
+       SUM(total_cost - COALESCE(paid_amount, 0)) AS remainingAmount
+     FROM billing
+     GROUP BY customer_name
+     HAVING remainingAmount > 0`
+  );
+
+  return rows;
 }
 
 async totalSalesToday() {

@@ -306,6 +306,44 @@ class APIController {
     }
   }
 
+  async addPartialPayment(req, res, next) {
+    try {
+      const result = await this.billingService.addPartialPayment(
+        req.params.id,
+        req.body.paymentDetails
+      );
+
+      if (!result) {
+        return res.status(404).json({
+          success: false,
+          message: "Bill not found",
+        });
+      }
+
+      return res.status(200).json({
+        success: true,
+        message: "Partial payment added successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async getPaymentGroupedByCustomer(req, res, next) {
+    try {
+      const result = await this.billingService.getPaymentGroupedByCustomer();
+
+      return res.status(200).json({
+        success: true,
+        message: "Remaining payments retrieved successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getAllBills(req, res, next) {
     try {
       const result = await this.billingService.getAllBills();
