@@ -17,7 +17,6 @@ router.get(
   validate(salesReportSchema, "query"),
   apiController.getSalesReport.bind(apiController)
 );
-
 router.get(
   '/inventory',
     authenticateToken,

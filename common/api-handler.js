@@ -280,7 +280,7 @@ class APIController {
 
   async createBill(req, res, next) {
     try {
-      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode } =
+      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode, is_partial } =
         req.body;
       
 
@@ -292,7 +292,8 @@ class APIController {
         paidStatus,
         customer_name,
         customer_mobile,
-        payment_mode
+        payment_mode,
+        is_partial
       );
 
       return res.status(201).json({

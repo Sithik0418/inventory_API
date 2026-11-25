@@ -72,7 +72,8 @@ const createBillSchema = Joi.object({
     .trim()
     .pattern(/^[0-9+()\-\s]{7,15}$/)
     .required(),
-  payment_mode: Joi.string().trim().min(1).max(50).required(),
+  payment_mode: Joi.string().trim().min(1).max(50).optional(),
+  is_partial: Joi.number().integer().valid(0, 1).default(0),
 
   products: Joi.array()
     .items(

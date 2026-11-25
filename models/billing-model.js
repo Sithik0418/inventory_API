@@ -8,7 +8,7 @@ class BillingModel {
         this.productModel = new ProductModel();
     }
 
-async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode) {
+async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus = 1, customer_name, customer_mobile, payment_mode, is_partial = 0) {
   const connection = await pool.getConnection();
   let transactionStarted = false;
 
@@ -90,8 +90,8 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
     const [billResult] = await connection.execute(
       `INSERT INTO billing
        (user_id, subtotal, tax_applied_percent,
-        is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        is_tax_applied, tax_amount, total_cost, paid_status, customer_name, customer_mobile, payment_mode, is_partial)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         userId,
         subtotal,
@@ -102,7 +102,8 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
         paidStatus,
         customer_name,
         customer_mobile,
-        payment_mode
+        payment_mode ?? null,
+        String(is_partial)
       ]
     );
 
@@ -136,6 +137,7 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
       tax_amount: taxAmount,
       total_cost: grandTotal,
       paid_status: paidStatus,
+      is_partial: Number(is_partial),
       items,
     };
   } catch (error) {
@@ -154,7 +156,7 @@ async createBill(userId, products, isTaxApplied, taxAppliedPercent, paidStatus =
 async getAllBills() {
   const [rows] = await pool.execute(
     `SELECT
-       id, total_cost AS totalCost, customer_name AS customerName, customer_mobile AS customerMobile, payment_mode AS paymentMode, created_at as createdAt, paid_status AS paidStatus
+       id, total_cost AS totalCost, customer_name AS customerName, customer_mobile AS customerMobile, payment_mode AS paymentMode, is_partial AS isPartial, created_at as createdAt, paid_status AS paidStatus
      FROM billing 
      ORDER BY created_at DESC`
   );
@@ -197,6 +199,7 @@ async getBillById(id) {
     taxAmount: rows[0].tax_amount,
     totalCost: rows[0].total_cost,
     paidStatus: rows[0].paid_status,
+    isPartial: rows[0].is_partial,
     createdAt: rows[0].created_at,
     products: rows.map((row) => ({
       billingitemId: row.billing_item_id,
