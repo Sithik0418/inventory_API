@@ -305,6 +305,19 @@ async addPartialPayment(billingId, paymentDetails) {
   }
 }
 
+async getPartialPaymentHistory() {
+  const [rows] = await pool.execute(
+    `SELECT
+       partial_billing.*,
+       billing.customer_name,
+       billing.customer_mobile
+     FROM partial_billing
+     JOIN billing ON billing.id = partial_billing.billing_id`
+  );
+
+  return rows;
+}
+
 async getPaymentGroupedByCustomer() {
   const [rows] = await pool.execute(
     `SELECT

@@ -344,6 +344,20 @@ class APIController {
     }
   }
 
+  async getPartialPaymentHistory(req, res, next) {
+    try {
+      const result = await this.billingService.getPartialPaymentHistory();
+
+      return res.status(200).json({
+        success: true,
+        message: "Partial payment history retrieved successfully",
+        data: result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async getAllBills(req, res, next) {
     try {
       const result = await this.billingService.getAllBills();

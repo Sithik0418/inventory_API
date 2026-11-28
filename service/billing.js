@@ -43,6 +43,10 @@ class BillingService {
     return await this.billingModel.addPartialPayment(billId, paymentDetails);
   }
 
+  async getPartialPaymentHistory() {
+    return await this.billingModel.getPartialPaymentHistory();
+  }
+
   async getPaymentGroupedByCustomer() {
     return await this.billingModel.getPaymentGroupedByCustomer();
   }

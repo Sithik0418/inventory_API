@@ -17,6 +17,16 @@ router.get(
   apiController.getPaymentGroupedByCustomer.bind(apiController)
 );
 
+router.get(
+  "/paartial-payment-history",
+  apiController.getPartialPaymentHistory.bind(apiController)
+);
+
+router.get(
+  "/partial-payment-history",
+  apiController.getPartialPaymentHistory.bind(apiController)
+);
+
 router.post("/", validate(createBillSchema), apiController.createBill.bind(apiController));
 
 router.post(
