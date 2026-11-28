@@ -12,7 +12,7 @@ The server restarts when `index.js` or one of its required JavaScript files chan
 
 ## Daily bill email
 
-The daily report scheduler calls `GET /api/daily-bill-report?date=YYYY-MM-DD` and emails the previous day's bill summary table to `sithik651@gmail.com` at 9:00 AM in `Asia/Kolkata`. Bill numbers are plain text; the email does not include bill detail sections or links.
+The daily report scheduler calls `GET /api/daily-bill-report?date=YYYY-MM-DD` and emails the previous day's bill summary table to `test` at 9:00 AM in `Asia/Kolkata`. Bill numbers are plain text; the email does not include bill detail sections or links.
 
 1. Copy `.env.example` settings into `.env`.
 2. Set `SMTP_USER` to your Gmail address and `SMTP_PASS` to a Google App Password. Do not use your regular Gmail password.

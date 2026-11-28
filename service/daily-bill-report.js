@@ -5,7 +5,7 @@ const nodemailer = require('nodemailer');
 const { createDailyBillEmail } = require('./daily-bill-email');
 
 const timeZone = process.env.REPORT_TIMEZONE || 'Asia/Kolkata';
-const reportEmail = process.env.REPORT_EMAIL_TO || 'sithik651@gmail.com';
+const reportEmail = process.env.REPORT_EMAIL_TO || 'test@gmail.com';
 const apiUrl = process.env.DAILY_REPORT_API_URL
   || `http://localhost:${process.env.PORT || 3000}/api/daily-bill-report`;
 
