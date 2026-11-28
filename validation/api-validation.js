@@ -67,6 +67,7 @@ const createBillSchema = Joi.object({
     }),
 
   paidStatus: Joi.number().integer().valid(1, 2).optional(),
+  paid_status: Joi.number().integer().valid(1, 2).optional(),
   customer_name: Joi.string().trim().min(1).max(150).required(),
   customer_mobile: Joi.string()
     .trim()
@@ -143,6 +144,14 @@ const salesReportSchema = Joi.object({
   'date.range': '"startDate" must be on or before "endDate"'
 });
 
+const deadStockQuerySchema = Joi.object({
+  days: Joi.number().integer().positive().default(30)
+});
+
+const profitSummaryQuerySchema = Joi.object({
+  period: Joi.string().valid('today', 'month', 'year').default('today')
+});
+
 module.exports = {
   userSchema,
   productSchema,
@@ -152,5 +161,7 @@ module.exports = {
   getBillByIdSchema,
   updatePaidStatusSchema,
   partialPaymentSchema,
-  salesReportSchema
+  salesReportSchema,
+  deadStockQuerySchema,
+  profitSummaryQuerySchema
 };

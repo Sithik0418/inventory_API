@@ -25,6 +25,10 @@ class ProductService {
   async getSalesReport(startDate, endDate) {
     return await this.billing.getSalesReport(startDate, endDate);
   }
+
+  async getProfitSummary(period) {
+    return await this.billing.getProfitSummary(period);
+  }
 }
 
 module.exports = ProductService;

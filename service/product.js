@@ -16,6 +16,10 @@ class ProductService {
     return this.product.getProductsForInventory();
   }
 
+  async getDeadStockProducts(days) {
+    return this.product.getDeadStockProducts(days);
+  }
+
   async lowStockProducts() {
     return this.product.lowStockProducts();
   }

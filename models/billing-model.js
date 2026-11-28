@@ -415,6 +415,54 @@ async getSalesReport(startDate, endDate) {
     salesTrend
   };
 }
+
+async getProfitSummary(period) {
+  const periodFilters = {
+    today: `b.created_at >= CURRENT_DATE
+      AND b.created_at < DATE_ADD(CURRENT_DATE, INTERVAL 1 DAY)`,
+    month: `b.created_at >= DATE_FORMAT(CURRENT_DATE, '%Y-%m-01')
+      AND b.created_at < DATE_ADD(
+        DATE_FORMAT(CURRENT_DATE, '%Y-%m-01'),
+        INTERVAL 1 MONTH
+      )`,
+    year: `b.created_at >= MAKEDATE(YEAR(CURRENT_DATE), 1)
+      AND b.created_at < MAKEDATE(YEAR(CURRENT_DATE) + 1, 1)`
+  };
+  const periodFilter = periodFilters[period];
+
+  if (!periodFilter) {
+    throw new Error("Invalid profit summary period");
+  }
+
+  const [rows] = await pool.execute(
+    `SELECT
+       COALESCE(SUM(bi.unit_price * bi.count), 0) AS totalSales,
+       COALESCE(SUM(p.buy_price * bi.count), 0) AS totalPurchaseCost,
+       COALESCE(
+         SUM((bi.unit_price - p.buy_price) * bi.count),
+         0
+       ) AS totalProfit
+     FROM billing b
+     JOIN billing_items bi ON bi.billing_id = b.id
+     JOIN products p ON p.id = bi.product_id
+     WHERE b.paid_status = 2
+       AND ${periodFilter}`
+  );
+
+  const totalSales = Number(rows[0].totalSales);
+  const totalPurchaseCost = Number(rows[0].totalPurchaseCost);
+  const totalProfit = Number(rows[0].totalProfit);
+
+  return {
+    period,
+    totalSales,
+    totalPurchaseCost,
+    totalProfit,
+    marginPercent: totalSales > 0
+      ? Number(((totalProfit / totalSales) * 100).toFixed(2))
+      : 0
+  };
+}
 }
 
 module.exports = BillingModel;

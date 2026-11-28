@@ -39,6 +39,10 @@ class BillingService {
     return await this.billingModel.getSalesReport(startDate, endDate);
   }
 
+  async getProfitSummary(period) {
+    return await this.billingModel.getProfitSummary(period);
+  }
+
   async addPartialPayment(billId, paymentDetails) {
     return await this.billingModel.addPartialPayment(billId, paymentDetails);
   }

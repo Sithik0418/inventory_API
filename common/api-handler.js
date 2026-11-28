@@ -210,6 +210,21 @@ class APIController {
     }
   }
 
+  async getDeadStockProducts(req, res) {
+    try {
+      const days = Number(req.query.days ?? 30);
+      const products = await this.productService.getDeadStockProducts(days);
+
+      return sendResponse(
+        res, 200, true, products, 'Dead stock products fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+
+      return sendResponse(res, 500, false, 'Failed to fetch dead stock products');
+    }
+  }
+
   async getOverall(req, res) {
     try {
       const overallData = await this.dashboardService.getOverall(); 
@@ -237,6 +252,20 @@ class APIController {
     } catch (error) {
       console.error(error);
       return sendResponse(res, 500, false, 'Failed to fetch sales report');
+    }
+  }
+
+  async getProfitSummary(req, res) {
+    try {
+      const period = req.query.period ?? 'today';
+      const summary = await this.dashboardService.getProfitSummary(period);
+
+      return sendResponse(
+        res, 200, true, summary, 'Profit summary fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, false, 'Failed to fetch profit summary');
     }
   }
 
@@ -280,16 +309,15 @@ class APIController {
 
   async createBill(req, res, next) {
     try {
-      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, customer_name, customer_mobile, payment_mode, is_partial } =
+      const { userId, products, isTaxApplied, taxAppliedPercent, paidStatus, paid_status, customer_name, customer_mobile, payment_mode, is_partial } =
         req.body;
-      
 
       const result = await this.billingService.createBill(
-        userId ,
+        userId,
         products,
         isTaxApplied,
         taxAppliedPercent,
-        paidStatus,
+        paidStatus ?? paid_status,
         customer_name,
         customer_mobile,
         payment_mode,

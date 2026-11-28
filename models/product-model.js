@@ -28,6 +28,38 @@ FROM products;`,
     return rows;
   }
 
+  async getDeadStockProducts(days) {
+    const [rows] = await pool.execute(
+      `SELECT
+         p.id AS productId,
+         p.name AS productName,
+         p.category,
+         p.count AS stockCount,
+         sales.last_sold_at AS lastSoldAt,
+         CASE
+           WHEN sales.last_sold_at IS NULL THEN NULL
+           ELSE DATEDIFF(CURRENT_DATE, DATE(sales.last_sold_at))
+         END AS daysSinceLastSale
+       FROM products p
+       LEFT JOIN (
+         SELECT bi.product_id, MAX(b.created_at) AS last_sold_at
+         FROM billing_items bi
+         JOIN billing b ON b.id = bi.billing_id
+         WHERE b.paid_status = 2
+         GROUP BY bi.product_id
+       ) sales ON sales.product_id = p.id
+       WHERE p.count > 0
+         AND (
+           sales.last_sold_at IS NULL
+           OR sales.last_sold_at < DATE_SUB(CURRENT_TIMESTAMP, INTERVAL ? DAY)
+         )
+       ORDER BY sales.last_sold_at ASC, p.name ASC`,
+      [days]
+    );
+
+    return rows;
+  }
+
   async lowStockProducts() {
     const [rows] = await pool.execute(
       `SELECT COUNT(*) AS lowStockItems
@@ -116,4 +148,3 @@ async updateProduct(id, { name, count, sellPrice, buyPrice }) {
 }
 
 module.exports = Product;
-
