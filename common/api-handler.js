@@ -269,6 +269,23 @@ class APIController {
     }
   }
 
+  async getDailyBillReport(req, res) {
+    try {
+      const bills = await this.billingService.getBillsForDate(req.query.date);
+
+      return sendResponse(
+        res,
+        200,
+        true,
+        { date: req.query.date, bills },
+        'Daily bill report fetched successfully'
+      );
+    } catch (error) {
+      console.error(error);
+      return sendResponse(res, 500, false, 'Failed to fetch daily bill report');
+    }
+  }
+
   async getProducts(req, res) {
     try {
       const products = await this.productService.getAllProducts();

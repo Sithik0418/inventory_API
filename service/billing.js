@@ -23,6 +23,10 @@ class BillingService {
     return await this.billingModel.getAllBills();
   }
 
+  async getBillsForDate(date) {
+    return await this.billingModel.getBillsForDate(date);
+  }
+
   async getBillById(id) {
     return await this.billingModel.getBillById(id);
   }

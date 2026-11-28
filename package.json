@@ -5,6 +5,8 @@
   "main": "index.js",
   "scripts": {
     "dev": "node --watch index.js",
+    "daily-report": "node --use-system-ca service/daily-bill-report.js",
+    "daily-report:send-now": "node --use-system-ca service/daily-bill-report.js --once",
     "start": "node index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,6 +21,8 @@
     "joi": "^18.3.0",
     "jsonwebtoken": "^9.0.3",
     "mysql2": "^3.24.6",
+    "node-cron": "^4.6.0",
+    "nodemailer": "^10.6.1",
     "npm": "^12.2.1"
   }
 }

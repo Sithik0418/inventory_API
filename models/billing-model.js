@@ -167,6 +167,69 @@ async getAllBills() {
   return rows;
 }
 
+async getBillsForDate(date) {
+  const [rows] = await pool.execute(
+    `SELECT
+       b.id AS billId,
+       b.customer_name AS customerName,
+       b.customer_mobile AS customerMobile,
+       b.created_at AS createdAt,
+       b.subtotal,
+       b.is_tax_applied AS isTaxApplied,
+       b.tax_applied_percent AS taxAppliedPercent,
+       b.tax_amount AS taxAmount,
+       b.total_cost AS totalAmount,
+       u.name AS billedBy,
+       bi.id AS billingItemId,
+       p.name AS productName,
+       bi.count AS quantity,
+       bi.unit_price AS unitPrice,
+       bi.total_cost AS lineTotal
+     FROM billing b
+     LEFT JOIN users u ON u.id = b.user_id
+     LEFT JOIN billing_items bi ON bi.billing_id = b.id
+     LEFT JOIN products p ON p.id = bi.product_id
+     WHERE b.created_at >= ?
+       AND b.created_at < DATE_ADD(?, INTERVAL 1 DAY)
+     ORDER BY b.created_at ASC, bi.id ASC`,
+    [date, date]
+  );
+
+  const billsById = new Map();
+
+  for (const row of rows) {
+    let bill = billsById.get(row.billId);
+
+    if (!bill) {
+      bill = {
+        billId: row.billId,
+        customerName: row.customerName,
+        customerMobile: row.customerMobile,
+        createdAt: row.createdAt,
+        subtotal: Number(row.subtotal),
+        isTaxApplied: Boolean(row.isTaxApplied),
+        taxAppliedPercent: Number(row.taxAppliedPercent),
+        taxAmount: Number(row.taxAmount),
+        totalAmount: Number(row.totalAmount),
+        billedBy: row.billedBy,
+        products: []
+      };
+      billsById.set(row.billId, bill);
+    }
+
+    if (row.billingItemId !== null) {
+      bill.products.push({
+        productName: row.productName,
+        quantity: Number(row.quantity),
+        unitPrice: Number(row.unitPrice),
+        total: Number(row.lineTotal)
+      });
+    }
+  }
+
+  return Array.from(billsById.values());
+}
+
 async getBillById(id) {
   const [rows] = await pool.execute(
     `SELECT

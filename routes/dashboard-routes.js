@@ -5,11 +5,13 @@ const router = express.Router();
 const APIController = require("../common/api-handler");
 const apiController = new APIController();
 const { authenticateToken } = require("../common/jwt-ops");
+const { authenticateDailyReport } = require("../common/daily-report-auth");
 const {
   validate,
   salesReportSchema,
   deadStockQuerySchema,
-  profitSummaryQuerySchema
+  profitSummaryQuerySchema,
+  dailyBillReportQuerySchema
 } = require("../validation/api-validation");
 
 router.get("/overall",
@@ -27,6 +29,12 @@ router.get(
   authenticateToken,
   validate(profitSummaryQuerySchema, "query"),
   apiController.getProfitSummary.bind(apiController)
+);
+router.get(
+  "/daily-bill-report",
+  authenticateDailyReport,
+  validate(dailyBillReportQuerySchema, "query"),
+  apiController.getDailyBillReport.bind(apiController)
 );
 router.get(
   '/inventory',

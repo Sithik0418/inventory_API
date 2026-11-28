@@ -152,6 +152,10 @@ const profitSummaryQuerySchema = Joi.object({
   period: Joi.string().valid('today', 'month', 'year').default('today')
 });
 
+const dailyBillReportQuerySchema = Joi.object({
+  date: salesReportDateSchema.required()
+});
+
 module.exports = {
   userSchema,
   productSchema,
@@ -163,5 +167,6 @@ module.exports = {
   partialPaymentSchema,
   salesReportSchema,
   deadStockQuerySchema,
-  profitSummaryQuerySchema
+  profitSummaryQuerySchema,
+  dailyBillReportQuerySchema
 };
